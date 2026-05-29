@@ -29,6 +29,7 @@ npm run dev --filter=ui
 ## Accessibility
 
 - Overall, tested manually via keyboard navigation - we're building on top of popular component library so things look good
+- Weirdly, I had to manually override cursor style to pointer in `Mantine` - for `Checkbox` and `Radio`
 - If I had more time - `@axe-core/react` for automated testing and/or `eslint-plugin-jsx-a11y` for more strict role checking
 - Currently, there's an issue when switching between tabs - the focus gets "stolen" by the active plan's CTA
 
