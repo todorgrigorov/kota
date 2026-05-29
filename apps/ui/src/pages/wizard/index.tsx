@@ -72,11 +72,7 @@ export default function WizardPage({ api }: WizardPageProps) {
       </Stepper>
 
       {currentStep === WizardStep.SelectPlan && (
-        <ProviderPlanStep
-          api={api}
-          currentPlanId={estimate?.plan.id}
-          onSelect={handleSelectPlan}
-        />
+        <ProviderPlanStep api={api} currentPlanId={estimate?.plan.id} onSelect={handleSelectPlan} />
       )}
       {currentStep === WizardStep.Configure && selectedPlan && estimate && (
         <ConfigureStep

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Tabs, SimpleGrid, Card, Group, Text, Badge, Button, Avatar } from '@mantine/core';
 import { useProviders } from '../../../hooks/use-providers';
 import { usePlans } from '../../../hooks/use-plans';

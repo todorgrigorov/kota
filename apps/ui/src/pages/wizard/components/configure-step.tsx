@@ -147,7 +147,11 @@ export default function ConfigureStep({
         <Alert color="gray">{STRINGS.configure.empty}</Alert>
       ) : (
         <>
-          <OptionsSection options={plan.options} selections={options} onChange={handleOptionChange} />
+          <OptionsSection
+            options={plan.options}
+            selections={options}
+            onChange={handleOptionChange}
+          />
           {plan.options.length > 0 && plan.addons.length > 0 && <Divider />}
           <AddonsSection addons={plan.addons} selected={addons} onToggle={handleAddonToggle} />
         </>
