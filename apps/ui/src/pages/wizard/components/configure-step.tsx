@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
-import { Stack, Title, Checkbox, Group, Text, Button, Divider, Alert } from '@mantine/core';
+import { Stack, Title, Checkbox, Group, Text, Button, Divider, Alert, Badge } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { OptionField } from '.';
 import { STRINGS } from '../strings';
 import type { Plan, Estimate, Option, Addon } from '../../../types';
-import type { UpdateEstimateInput } from '../../../api/types';
+import type { UpdateEstimateParams } from '../../../hooks/use-estimate';
 
 interface OptionsSectionProps {
   options: Option[];
@@ -53,9 +53,9 @@ function AddonsSection({ addons, selected, onToggle }: AddonsSectionProps) {
             styles={{ input: { cursor: 'pointer' }, label: { cursor: 'pointer' } }}
           />
           {addon.free ? (
-            <Text size="sm" c="green" fw={500}>
+            <Badge color="green" variant="light">
               {STRINGS.configure.free}
-            </Text>
+            </Badge>
           ) : (
             <Text size="sm">{addon.price}</Text>
           )}
@@ -72,20 +72,18 @@ interface PricingSummaryProps {
 
 function PricingSummary({ total, isUpdating }: PricingSummaryProps) {
   return (
-    <Stack gap={4}>
-      <Text size="sm" c="dimmed">
-        {STRINGS.configure.totalLabel}
-      </Text>
+    <Group justify="space-between">
+      <Text fw={600}>{STRINGS.configure.totalLabel}</Text>
       <Text
-        size="xl"
         fw={700}
+        size="lg"
         c={isUpdating ? 'dimmed' : undefined}
         aria-live="polite"
         aria-atomic="true"
       >
-        {isUpdating ? STRINGS.configure.updating : total}
+        {total}
       </Text>
-    </Stack>
+    </Group>
   );
 }
 
@@ -93,7 +91,7 @@ export interface ConfigureStepProps {
   plan: Plan;
   estimate: Estimate;
   isUpdating: boolean;
-  onUpdate: (input: UpdateEstimateInput) => Promise<unknown>;
+  onUpdate: (params: UpdateEstimateParams) => Promise<unknown>;
   onNext: () => void;
   onBack: () => void;
 }
@@ -119,7 +117,7 @@ export default function ConfigureStep({
       }
       setOptions(next);
       try {
-        await onUpdate({ plan_id: plan.id, selections: { ...next, addons } });
+        await onUpdate({ plan, selections: { ...next, addons } });
       } catch {
         notifications.show({ message: STRINGS.configure.saveError, color: 'red' });
       }
@@ -132,7 +130,7 @@ export default function ConfigureStep({
       const next = checked ? [...addons, id] : addons.filter((a) => a !== id);
       setAddons(next);
       try {
-        await onUpdate({ plan_id: plan.id, selections: { ...options, addons: next } });
+        await onUpdate({ plan, selections: { ...options, addons: next } });
       } catch {
         notifications.show({ message: STRINGS.configure.saveError, color: 'red' });
       }

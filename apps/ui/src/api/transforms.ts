@@ -2,6 +2,7 @@ import { resolveOption } from './registry';
 import { formatPrice } from '../utils';
 import type { RawProvider, RawPlan, RawEstimate } from './types';
 import type { Provider, Plan, Estimate } from '../types';
+import { RAW_STATUS_TO_STATUS } from './constants';
 
 export function transformProvider(p: RawProvider): Provider {
   return {
@@ -22,12 +23,15 @@ export function transformPlan(p: RawPlan): Plan {
     approvalType: p.approval_type,
     minParticipants: p.min_participants,
     leadTimeDays: p.lead_time_days,
-    options: p.options.map((o) => ({
-      code: o.code,
-      required: o.required,
-      values: o.values,
-      strategy: resolveOption(o.code, o.values),
-    })),
+    options: p.options
+      .slice()
+      .sort((a, b) => Number(b.required) - Number(a.required))
+      .map((o) => ({
+        code: o.code,
+        required: o.required,
+        values: o.values,
+        strategy: resolveOption(o.code, o.values),
+      })),
     addons: p.addons.map((a) => ({
       id: a.id,
       name: a.name,
@@ -48,7 +52,7 @@ export function transformEstimate(e: RawEstimate): Estimate {
 
   return {
     id: e.id,
-    status: e.status,
+    status: RAW_STATUS_TO_STATUS[e.status],
     plan: e.plan,
     optionSelections,
     addonSelections,

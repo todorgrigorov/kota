@@ -1,7 +1,7 @@
 import type { OptionRenderStrategy } from '../api/registry';
-import type { ApprovalType, EstimateStatus } from '../api/types';
+import type { ApprovalType, RawEstimateStatus } from '../api/types';
 
-export type { ApprovalType, EstimateStatus };
+export type { ApprovalType };
 
 export interface Provider {
   id: string;
@@ -41,6 +41,14 @@ export interface Pricing {
   base: string;
   addons: string;
   total: string;
+}
+
+export interface EstimateStatus {
+  id: RawEstimateStatus;
+  label: string;
+  color: string;
+  title?: string;
+  body?: string;
 }
 
 export interface Estimate {

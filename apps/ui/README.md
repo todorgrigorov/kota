@@ -16,54 +16,30 @@ npm run dev
 npm run dev --filter=ui
 ```
 
-## Architecture Decisions
-
-### API Layer (`src/api/`)
-The FE never touches raw BE shapes. Every response goes through:
-- `transforms.ts` — BE DTOs → FE view models (normalises nulls, formats prices, splits selections)
-- `registry.ts` — maps option codes to render strategies (`radio` / `select` / `readonly`). Unknown codes get a humanised fallback label and a derived control type — the UI never crashes on unknown options.
-
-### Flow
-Single-page Mantine `<Stepper>` wizard (no URL per step). Only `/status` has its own route, since it's a terminal state a user might return to. On load, if the estimate status is not `draft`, the app redirects to `/status` immediately.
-
-### Pricing
-All pricing is server-computed. `PUT /estimate` fires on every selection commit (radio change, checkbox toggle). Pricing shows a dimmed state during the in-flight request. `refetchOnWindowFocus` handles stale prices on tab return.
-
-### Single-value options
-Auto-selected silently, rendered as a read-only `Badge`. Not a real choice — no point asking the user to interact with it.
-
-### Plan switching
-Non-issue in the wizard model. Selecting a new plan calls `PUT /estimate` with empty selections, naturally resetting the configure step.
-
----
-
 ## Product Reasoning
 
-**Information hierarchy** — Plan constraints (`min_participants`, `lead_time_days`, `approval_type`) are surfaced inline on the plan cards, not hidden behind a detail view. The approval badge is visually distinct (amber) because it changes the finalise outcome from instant to pending — users need to know before selecting.
+1. All CTAs are primary, remaining actions are secondary. Individual plans are hidden until you select the actual provider. Plans that require approval are emphasized with a colored badge before you even select them.
 
-**Constraint communication** — Required options are marked with a red `*`. The submit button is disabled while blockers exist; blocking reasons are listed inline above it so the user knows exactly what to fix.
+2. I'm using distinct cards for showing details about each plan so they fit nicely on the bottom. This can become a problem if we start supporting >10 constraints as the user might get confused from all the text. In that case, some visual iconography/glyphs can help with the first impression. All required options are put on top and have \* in labels.
 
-**Error recovery** — On `PUT /estimate` failure: toast notification so the user knows the change didn't save. On `POST /estimate/finalise` failure: blockers shown inline above the submit button. Estimate data is always persisted server-side, so a page refresh never loses progress.
+3. We always emit PUT /estimate on any plan change so intermediary state should be preserved in DB. On errors, we show toast notification to user for visibility. Currently, there is no retry UI but this can be added fairly easily via TanStack Query's `refetch`.
 
-**One decision I'd revisit** — The `selectedPlan` state in `WizardPage` is in-memory only. On page reload mid-configure, the user lands back on step 1 because we can't reconstruct the full plan object from the estimate response (which only returns `plan: { id, name }`). A `/plans/:id` endpoint or including the full plan in the estimate response would fix this cleanly.
-
----
+4. Currently, we allow user to proceed to final step even if he has not filled in all required fields. We surface the `block_reasons` response but this means he has to go back to previous step and redo. I think this whole validation might need to happen on 2nd step instead.
 
 ## Accessibility
 
-- Step headings use `tabIndex={-1}` + `ref.focus()` on step advance for screen reader context
-- First interactive element per step uses `autoFocus`
-- Pricing total uses `aria-live="polite" aria-atomic="true"` — announced after each selection commit
-- All interactive controls use Mantine primitives which ship with correct ARIA roles
-
-**Testing:** keyboard navigation (Tab, Enter, Space, Arrow keys), VoiceOver spot-checks on step transitions and pricing updates.
-
-**Known gaps:** No automated axe/Lighthouse run completed within the timebox.
+- Overall, tested manually via keyboard navigation - we're building on top of popular component library so things look good
+- If I had more time - `@axe-core/react` for automated testing and/or `eslint-plugin-jsx-a11y` for more strict role checking
+- Currently, there's an issue when switching between tabs - the focus gets "stolen" by the active plan's CTA
 
 ---
 
-## Known Limitations
+## Known Limitations & Future Work
 
-- One active estimate per employer at all times (API constraint — no multi-quote support)
-- No "start over" after finalise — the API has no reset endpoint
-- Status transitions are forward-only
+- The `ProviderPlanStep` component is currently configured to fetch data on its own which might be a concern later on (maintainability)
+- Wizard progress is not being persisted so user always begins from start on page refresh
+- One active estimate per employer (API constraint)
+- No start-over without `db:reset` (API constraint)
+- The active provider is not being-preselected on the first step
+- No component/integration tests as they are costly (if more time - RTL + MSW + Playwright)
+- No approval process - ie estimate remains "stuck"

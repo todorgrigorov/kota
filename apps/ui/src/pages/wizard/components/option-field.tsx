@@ -31,6 +31,9 @@ export default function OptionField({ option, value, onChange }: OptionFieldProp
         <Badge variant="outline" color="gray">
           {displayValue}
         </Badge>
+        <Text size="xs" c="dimmed">
+          {STRINGS.options.readonlyDisclaimer}
+        </Text>
       </Stack>
     );
   }

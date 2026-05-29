@@ -1,50 +1,37 @@
 # Frontend Plan
 
 ## Stack
-React + TypeScript + Vite (`apps/ui`) · TanStack Query · Mantine · CSS Modules
 
-## Structure
-```
-src/
-├── api/
-│   ├── client.ts       # Typed fetch wrappers
-│   ├── transforms.ts   # BE DTO → FE view model
-│   └── registry.ts     # Option render strategy (control type + labels) with fallback
-├── components/
-│   ├── steps/          # StepProviderPlan, StepConfigure, StepReview
-│   ├── StatusScreen.tsx
-│   └── OptionField.tsx # Renders radio / select / readonly-badge per registry
-└── App.tsx
-```
+React 19 + TypeScript + Vite · TanStack Query · TanStack Router · Mantine (UI components)
 
-## Flow
-Mantine `<Stepper>` wizard (no URL routing per step). On load, derive starting step from `GET /estimate` status + blocking_reasons. Provider selection → `localStorage`.
+## Routing
 
-## Steps
-1. **Provider + Plan** — Mantine Tabs (providers) + Cards (plans with constraints inline, approval badge)
-2. **Configure** — options via `OptionField`, add-ons section below, `PUT /estimate` on each commit
-3. **Review** — summary + blocking_reasons inline + Submit → `POST /estimate/finalise`
-4. **Status** — `pending_approval` (amber) or `finalised` (green), no start-over
+- `/` → `WizardPage` — redirects to `/status` if estimate is not `draft`
+- `/status` → `StatusPage` — redirects to `/` if estimate is `draft`
 
-## Registry fallback
-Unknown codes → humanize + derive control: 1 value → `readonly` badge, >4 → `select`, else → `radio`
+## API Layer
+
+Raw BE types (`Raw*`) → `transforms.ts` → FE view models. `Api` interface returns FE types; transforms applied in `client.ts`. `EstimateStatus` is a full object `{ id, label, color, title?, body? }` derived via `RAW_STATUS_TO_STATUS` in `constants.ts`.
+
+## Mutation Design
+
+`UpdateEstimateParams` takes `plan: Plan` (not `plan_id`) so the mutation auto-merges readonly option values and awaits `refetchQueries` before resolving — prevents stale state on step advance.
+
+## Registry Fallback
+
+Unknown option codes → humanized label + derived control: 1 value → `readonly`, >4 → `select`, else → `radio`.
 
 ## Key Decisions
-| Scenario | Decision |
-|---|---|
-| Stale pricing on tab return | `refetchOnWindowFocus` + toast if total changed |
-| Plan switching | Non-issue — wizard resets selections on plan change |
-| Single-value options | Auto-selected, read-only Badge |
-| PUT failure | Toast + confirmation modal if user navigates back |
-| Finalise blockers | Inline above Submit button |
-| Free add-ons | Green "Free" badge |
-| Empty provider/plans | Inline empty state messages |
 
-## Accessibility
-- Step heading: `tabIndex={-1}` + ref `.focus()` on advance
-- First input per step: `autoFocus`
-- Pricing total: `aria-live="polite" aria-atomic="true"`
+| Scenario                    | Decision                                                       |
+| --------------------------- | -------------------------------------------------------------- |
+| Stale pricing               | `refetchOnWindowFocus: true`                                   |
+| Plan switching              | All selections reset; readonly options auto-seeded in mutation |
+| PUT response missing `plan` | `refetchQueries` instead of `setQueryData`                     |
+| Single-value options        | Readonly badge + disclaimer; value auto-included in every PUT  |
+| PUT failure                 | Toast; local state preserved for retry                         |
+| Direct `/status` with draft | Redirect to `/`                                                |
 
-## Known Limitations
-- One active estimate per employer (API constraint)
-- No start-over after finalise (no API support)
+## Testing
+
+Vitest unit tests in `src/api/transforms.test.ts` covering all API edge cases from the brief.

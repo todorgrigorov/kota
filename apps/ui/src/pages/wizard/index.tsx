@@ -25,7 +25,7 @@ export default function WizardPage({ api }: WizardPageProps) {
     if (!estimate) {
       return;
     }
-    if (estimate.status !== 'draft') {
+    if (estimate.status.id !== 'draft') {
       navigate({ to: ROUTES.status });
     }
   }, [estimate, navigate]);
@@ -44,7 +44,7 @@ export default function WizardPage({ api }: WizardPageProps) {
 
   const handleSelectPlan = useCallback(
     async (plan: Plan) => {
-      await update({ plan_id: plan.id, selections: { addons: [] } });
+      await update({ plan, selections: { addons: [] } });
       setSelectedPlan(plan);
       goNext();
     },

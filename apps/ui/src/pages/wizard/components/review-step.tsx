@@ -94,19 +94,19 @@ export default function ReviewStep({
         {STRINGS.review.heading}
       </Title>
       <SelectionsSummary plan={plan} estimate={estimate} />
-      <Divider />
-      <PricingBreakdown plan={plan} estimate={estimate} />
       {estimate.blockingReasons.length > 0 && (
         <Alert color="red" title={STRINGS.review.blockersTitle}>
-          <Stack gap="xs">
+          <Stack component="ul" gap="xs" style={{ margin: 0 }}>
             {estimate.blockingReasons.map((reason) => (
-              <Text key={reason} size="sm">
+              <Text component="li" key={reason} size="sm">
                 {reason}
               </Text>
             ))}
           </Stack>
         </Alert>
       )}
+      <Divider />
+      <PricingBreakdown plan={plan} estimate={estimate} />
       <Group justify="space-between">
         <Button variant="default" onClick={onBack}>
           {STRINGS.review.back}

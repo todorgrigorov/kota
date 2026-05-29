@@ -1,6 +1,6 @@
 import type { Provider, Plan, Estimate } from '../types';
 
-export type EstimateStatus =
+export type RawEstimateStatus =
   | 'draft'
   | 'submitted'
   | 'quote_available'
@@ -63,7 +63,7 @@ export interface RawPricing {
 
 export interface RawEstimate {
   id: string;
-  status: EstimateStatus;
+  status: RawEstimateStatus;
   plan: { id: string; name: string };
   selections: Record<string, string | string[]>;
   pricing: RawPricing;
@@ -77,7 +77,7 @@ export interface UpdateEstimateInput {
 
 export interface RawFinaliseEstimateResponse {
   id: string;
-  status: EstimateStatus;
+  status: RawEstimateStatus;
 }
 
 export interface Api {
