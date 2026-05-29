@@ -16,6 +16,18 @@ npm run dev
 npm run dev --filter=ui
 ```
 
+## Ambiguous Scenarios
+
+1. `refetchOnWindowFocus` on `estimate` query should cause it to reevaluate and refresh the UI. For more complex scenarios, whe can look into SSEs.
+
+2. I've intentionally decided to reset options/addons on plan switch (`WizardPage.handleSelectPlan`) just because it's easier to implement and you don't have to worry about such "partial" state. Looking at it as a consumer, I also think it's the better way since on practice plans can have different criteria and choices on one might not make sense on another.
+
+3. I'm still showing those as grayed-out badge and little disclaimer text that they can't be changed. It's better for visibility IMO.
+
+4. `resolveOption` is setup to fallback to a humanized label in this case. If we want real `i18n` it'd better to hide this code behind some generic "Unknown" label and give the user the ability to see the code and maybe request support (?)
+
+---
+
 ## Product Reasoning
 
 1. All CTAs are primary, remaining actions are secondary. Individual plans are hidden until you select the actual provider. Plans that require approval are emphasized with a colored badge before you even select them.
