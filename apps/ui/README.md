@@ -24,7 +24,7 @@ npm run dev --filter=ui
 
 3. We always emit PUT /estimate on any plan change so intermediary state should be preserved in DB. On errors, we show toast notification to user for visibility. Currently, there is no retry UI but this can be added fairly easily via TanStack Query's `refetch`.
 
-4. Currently, we allow user to proceed to final step even if he has not filled in all required fields. We surface the `block_reasons` response but this means he has to go back to previous step and redo. I think this whole validation might need to happen on 2nd step instead.
+4. Currently, we allow user to proceed to final step even if he has not filled in all required fields. We surface the `block_reasons` response but this means he has to go back to previous step and redo. I think this whole validation might need to happen on 2nd step instead. Also, strictly visual - I'm applying the default theme for `Mantine` to save time but of course this makes the UI very generic and would need custom theming. Also, no light/dark support.
 
 ## Accessibility
 
